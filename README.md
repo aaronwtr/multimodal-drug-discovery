@@ -17,3 +17,7 @@ are also easily available at https://github.com/ml-jku/hti-cnn with the metadata
 We will start by a subset of this to experiment quickly ( 1/10 of the data)
 To download this dataset go to https://ml.jku.at/software/cellpainting/dataset/ (in https://github.com/ml-jku/hti-cnn) and download dataset00 then untar in some folder like images00. The metadata associated are in data/metadata. Some dataloader functions that returns image/structure pairs are in dataset. There is an example on how it works on test_dataloader.py 
 
+## Get started with baseline
+
+The file clip_test.py is a first simple baseline for clip framework to start from a baseline
+
