@@ -225,8 +225,9 @@ def setup_args():
 
     options.add_argument('--datadir', action="store", default="/projects/imagesets3/Cell_Painting_dataset/subset_bray/images00/") # CAREFUL, HERE PUT THE PATH 
     #OF WHERE IMAGES ARE STORED FOR YOU
-    options.add_argument('--train-metafile', action="store", default="data/metadata/df_00.csv")   
-    options.add_argument('--val-metafile', action="store", default="data/metadata/df_00.csv")
+    options.add_argument('--train-metafile', action="store", default="data/metadata/df00_train.csv")  
+    options.add_argument('--val-metafile', action="store", default="data/metadata/df00_test_easy.csv")
+    options.add_argument('--val-hard-metafile', action="store", default="data/metadata/df00_test_hard.csv")
     options.add_argument('--dataset', action="store", default="cell-painting")
     
     options.add_argument('--featfile', action="store", default=None)
@@ -277,9 +278,10 @@ def get_ecfp6_fingerprints(mols):
 
 args = setup_args()
 
-trainloader , testloader = setup_dataloaders(args)
+trainloader , testloader,testloaderhard = setup_dataloaders(args)
 print(len(trainloader))
 print(len(testloader))
+print(len(testloaderhard))
 
 
 
