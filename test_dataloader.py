@@ -10,6 +10,7 @@ from utils import save_img_as_npz,create_dir
 import argparse
 import sys
 from torchvision.utils import save_image
+import time
 
 
 import pandas as pd
@@ -30,9 +31,11 @@ def setup_args():
 
     options = argparse.ArgumentParser()
 
+    # Put the path of your image here
     options.add_argument('--datadir', action="store", default="/projects/imagesets3/Cell_Painting_dataset/subset_bray/images00/")
-    options.add_argument('--train-metafile', action="store", default="data/metadata/df_00.csv")   #/projects/synsight/ethan/graph2pheno/graph2pheno/
-    options.add_argument('--val-metafile', action="store", default="data/metadata/df_00.csv")
+    options.add_argument('--train-metafile', action="store", default="data/metadata/df00_train.csv")  
+    options.add_argument('--val-metafile', action="store", default="data/metadata/df00_test_easy.csv")
+    options.add_argument('--val-hard-metafile', action="store", default="data/metadata/df00_test_hard.csv")
     options.add_argument('--dataset', action="store", default="cell-painting")
     
     options.add_argument('--featfile', action="store", default=None)
@@ -41,7 +44,7 @@ def setup_args():
     options.add_argument('--n_sample', default=30, type=int, help='number of samples')
     options.add_argument('--seed', action="store", default=42, type=int)
     options.add_argument('--batch-size', action="store", dest="batch_size", default=16, type=int)
-    options.add_argument('--num-workers', action="store", dest="num_workers", default=0, type=int)
+    options.add_argument('--num-workers', action="store", dest="num_workers", default=32, type=int)
 
     # gpu options
     options.add_argument('--use-gpu', action="store_false", default=True)
@@ -67,16 +70,18 @@ create_dir(args.save_dir)
 
 if args.dataset == 'cell-painting':
   
-  trainloader , testloader = setup_dataloaders(args)
+  trainloader , testloader,testloaderhard = setup_dataloaders(args)
   print(len(trainloader))
   print(len(testloader))
-
-
+  print(len(testloaderhard))
+  time_epoch_start = time.time()
+  
   for batch_idx, (real_sample, cond) in enumerate(trainloader): # real sample are the real images and cond are the molecules (for of list len(bs))
       print(batch_idx)
-      print(real_sample.shape)
-      print(len(cond))
-
+      #print(real_sample.shape)
+      #print(len(cond))
+      
+      '''
       # to save images from the current batch in one channel per one channel
       for ch in range(5):
           ch_img = real_sample[:,ch:ch+1,:,:]
@@ -90,6 +95,16 @@ if args.dataset == 'cell-painting':
                   normalize=True, nrow=10, range=(-0.5, 0.5))
 
       break
+      '''
+  time_epoch_end=time.time()
+  time_epoch=time_epoch_end-time_epoch_start
+  print('time for one epoch: ',time_epoch)
+  print('approx time for one batch: ',time_epoch/len(trainloader))
+  
+
+      
+
+
 
 
 
