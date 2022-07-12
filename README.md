@@ -15,7 +15,8 @@ are also easily available at https://github.com/ml-jku/hti-cnn with the metadata
 ## Get started with few data
 
 We will start by a subset of this to experiment quickly ( 1/10 of the data)
-To download this dataset go to https://ml.jku.at/software/cellpainting/dataset/ (in https://github.com/ml-jku/hti-cnn) and download dataset00 then untar in some folder like images00. The metadata associated are in data/metadata. Some dataloader functions that returns image/structure pairs are in dataset. There is an example on how it works on test_dataloader.py 
+To download this dataset go to https://ml.jku.at/software/cellpainting/dataset/ (in https://github.com/ml-jku/hti-cnn) and download dataset00 then untar in some folder like images00. The metadata associated are in data/metadata. There is one train metadata and two test sets. Test_easy is molecules that the network as seen during training but not their related images and test_hard is molecules than the network has never seen.
+Some dataloader functions that returns image/structure pairs are in dataset. There is an example on how it works on test_dataloader.py 
 
 ## Get started with baseline
 
