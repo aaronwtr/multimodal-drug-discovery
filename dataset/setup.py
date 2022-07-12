@@ -28,11 +28,13 @@ def setup_dataloaders(args):
     if args.dataset == 'cell-painting':
         trainset = CellPaintingDataset(datadir=args.datadir, metafile=args.train_metafile, img_size=args.img_size, featfile=args.featfile)
         valset = CellPaintingDataset(datadir=args.datadir, metafile=args.val_metafile, img_size=args.img_size, featfile=args.featfile)
+        valset_hard=CellPaintingDataset(datadir=args.datadir, metafile=args.val_hard_metafile, img_size=args.img_size)
     elif args.dataset == 'cell-painting-patch':
         assert(args.img_size > 64)
         print('loading patch dataset')
         trainset = CellPaintingPatchDataset(datadir=args.datadir, metafile=args.train_metafile, img_size=args.img_size)
         valset = CellPaintingPatchDataset(datadir=args.datadir, metafile=args.val_metafile, img_size=args.img_size)
+        valset_hard=CellPaintingPatchDataset(datadir=args.datadir, metafile=args.val_hard_metafile, img_size=args.img_size)
     
     else:
         raise KeyError('Dataset %s is not valid' % args.dataset)
@@ -45,7 +47,9 @@ def setup_dataloaders(args):
     if valset is not None:
         valloader = DataLoader(dataset=valset, batch_size=args.batch_size, num_workers=args.num_workers, 
                                drop_last=False, shuffle=args.use_nce_loss)
+        valloader_hard = DataLoader(dataset=valset_hard, batch_size=args.batch_size, num_workers=args.num_workers, 
+                               drop_last=False, shuffle=args.use_nce_loss)
     else:
         valloader = None
 
-    return trainloader, valloader
+    return trainloader, valloader, valloader_hard
