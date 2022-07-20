@@ -375,7 +375,7 @@ with torch.no_grad():
         top10acc=0
         real_sample=real_sample.to(device)
         smiles_to_find=cond
-        smiles=cond[0]
+        
         
 
         for i in range(len(list_all_smiles)):
