@@ -338,7 +338,7 @@ for epoch in range(epochs):
 
 print(np.mean(time_epoch_liste))
 
-################################################## Test on easy task a first multimodal evaluation pipeline on retrieval task ###########################
+################################################## Test on easy task a first multimodal evaluation pipeline on Image retrieval task ###########################
 print(len(testloader))
 model.eval()
 
