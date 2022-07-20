@@ -338,6 +338,96 @@ for epoch in range(epochs):
 
 print(np.mean(time_epoch_liste))
 
+################################################## Test on easy task a first multimodal evaluation pipeline on retrieval task ###########################
+print(len(testloader))
+model.eval()
+
+with torch.no_grad():
+    mol_encoder=model.mol_encoder
+    mol_proj=model.mol_projection
+    image_encoder=model.image_encoder
+    image_proj=model.image_projection
+
+    #get the list of all molecules
+    list_all_smiles=list(metadata_val['SMILES'])
+    # get the fingerprints of all molecules
+    ecfp=get_ecfp6_fingerprints(list_all_smiles)
+    ecfp_tensor=torch.from_numpy(ecfp)
+    ecfp_tensor=ecfp_tensor.float()
+    ecfp_tensor=ecfp_tensor.to(device)
+    
+    # get the encoding of all molecules
+    mol_features=mol_encoder(ecfp_tensor)
+    mol_encoding=mol_proj(mol_features) # to get m1......mn
+
+
+    mol_encoding_indices=list(range(mol_encoding.shape[0]))
+
+    temperature=torch.tensor(0.2)
+
+    top1acc_liste=[]
+    top5acc_liste=[]
+    top10acc_liste=[]
+
+    for batch_idx, (real_sample, cond) in enumerate(testloader): 
+        top1acc=0
+        top5acc=0
+        top10acc=0
+        real_sample=real_sample.to(device)
+        smiles_to_find=cond
+        smiles=cond[0]
+        
+
+        for i in range(len(list_all_smiles)):
+                if smiles_to_find[0] == list_all_smiles[i]: #have to put 0 because it is a list too
+                    ind_true=i
+                   
+                
+
+        # encode image
+        enc=image_encoder(real_sample)
+        enc=enc.view(-1,enc.shape[1])
+        image_feat=image_proj(enc)
+
+        mol_latents, image_latents = map(lambda t: F.normalize(t, p = 2, dim = -1), (mol_encoding, image_feat))
+        temp = temperature.exp()
+        sim = einsum('i d, j d -> i j', mol_latents, image_latents) * temp
+        probs=sim.softmax(dim=0).squeeze().detach().cpu()
+          
+
+        # compute top x%
+        _,indices=torch.topk(probs,1)[0],torch.topk(probs,1)[1]
+        indices=indices.cpu().numpy()
+        if ind_true in indices:
+            top1acc+=1
+
+        _,indices=torch.topk(probs,5)[0],torch.topk(probs,5)[1]
+        indices=indices.cpu().numpy()
+        if ind_true in indices:
+            top5acc+=1
+
+        _,indices=torch.topk(probs,10)[0],torch.topk(probs,10)[1]
+        indices=indices.cpu().numpy()
+        if ind_true in indices:
+            top10acc+=1
+
+
+        top1acc_liste.append(top1acc)
+        top5acc_liste.append(top5acc)
+        top10acc_liste.append(top10acc)
+
+
+
+# save all
+
+final_top1acc=sum(top1acc_liste)/len(top1acc_liste)
+final_top5acc=sum(top5acc_liste)/len(top5acc_liste)
+final_top10acc=sum(top10acc_liste)/len(top10acc_liste)
+print('final_top1acc: ',final_top1acc) 
+print('final_top5acc: ',final_top5acc)   
+print('final_top10acc: ',final_top10acc)     
+
+
 
 
 
