@@ -24,3 +24,7 @@ def create_dir(dirname):
         return True
     except OSError:
         return False
+      
+# to work or visualize only with 3 channels: the ones taken represents the actin, WGA/phalloidin and nuclei (in RGB order)
+def get_3c_image(image):
+  return torch.stack((image[:,3,:,:],image[:,1,:,:],image[:,4,:,:])).permute(1,0,2,3)
