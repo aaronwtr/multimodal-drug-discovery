@@ -8,6 +8,7 @@ torch>=1.6
 torchvision
 tqdm
 rdkit-pypi
+x-clip
 
 
 
