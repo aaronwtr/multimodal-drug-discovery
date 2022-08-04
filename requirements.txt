@@ -2,6 +2,7 @@ einops>=0.4
 pillow
 transformers 
 albumentations
+matplotlib
 numpy
 pandas
 torch>=1.6
