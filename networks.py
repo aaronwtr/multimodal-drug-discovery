@@ -49,20 +49,6 @@ from einops import rearrange
 
 
 ########################################## Image encoder Resnet 18 ###############################
-'''
-class Image_Encoder(torch.nn.Module):
-    def __init__(self):
-        super(Image_Encoder, self).__init__()
-        self.model_pre = models.resnet18(pretrained=False)
-        self.base=nn.Sequential(*list(self.model_pre.children()))
-        self.base[0]=nn.Conv2d(5, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-        self.resnet=self.base[:-2]
-
-    def forward(self, x):
-        out=self.resnet(x)
-        out=rearrange(out, 'b d h w -> b (h w) d')
-        return out
-'''
 
 class Image_Encoder(torch.nn.Module):
     #output size is 512
@@ -93,31 +79,4 @@ class Mol_encoder_fingerprints(torch.nn.Module):
         out=self.model(x)
         return out
 
-'''
 
-class Mol_encoder_fingerprints(torch.nn.Module):
-    def __init__(self):
-        super(Mol_encoder_fingerprints, self).__init__()
-        self.model =nn.Sequential(
-                nn.Linear(1,1024),
-                nn.ReLU(),
-                nn.Linear(1024,512)
-        )
-
-    def forward(self, x):
-        out=self.model(x)
-        return out
-
-
-class Mol_encoder_fingerprints(torch.nn.Module):
-    def __init__(self):
-        super(Mol_encoder_fingerprints, self).__init__()
-        self.model =nn.Sequential(
-                nn.Linear(1,512)
-                
-        )
-
-    def forward(self, x):
-        out=self.model(x)
-        return out
-'''
