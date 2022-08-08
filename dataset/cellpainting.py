@@ -28,25 +28,6 @@ from albumentations import (
 from albumentations.pytorch.transforms import ToTensorV2
 
 
-def get_ecfp6_fingerprints(mols): 
-    """
-    Get ECFP6 fingerprints for a list of molecules which may include `None`s,
-    gracefully handling `None` values by returning a `None` value in that 
-    position. 
-    """
-    fps = []
-    for mol in mols:
-        if mol is None:
-            fps.append(None)
-        else:
-            mol=Chem.MolFromSmiles(mol)
-            fp = AllChem.GetMorganFingerprintAsBitVect(mol, 5, nBits=2048)
-            fp.ToBitString()
-            fps.append(fp)
-    fps=np.array(fps)
-    ecfp_tensor=torch.from_numpy(fps)
-    ecfp_tensor=ecfp_tensor.float()
-    return(ecfp_tensor)
 
 
 
