@@ -6,6 +6,9 @@ from .utils import ResizeTensor, CropPatch
 import numpy as np
 import pandas as pd
 
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
 import os
 
 from albumentations import (
@@ -23,6 +26,31 @@ from albumentations import (
 )
 
 from albumentations.pytorch.transforms import ToTensorV2
+
+
+def get_ecfp6_fingerprints(mols): 
+    """
+    Get ECFP6 fingerprints for a list of molecules which may include `None`s,
+    gracefully handling `None` values by returning a `None` value in that 
+    position. 
+    """
+    fps = []
+    for mol in mols:
+        if mol is None:
+            fps.append(None)
+        else:
+            mol=Chem.MolFromSmiles(mol)
+            fp = AllChem.GetMorganFingerprintAsBitVect(mol, 5, nBits=2048)
+            fp.ToBitString()
+            fps.append(fp)
+    fps=np.array(fps)
+    ecfp_tensor=torch.from_numpy(fps)
+    ecfp_tensor=ecfp_tensor.float()
+    return(ecfp_tensor)
+
+
+
+
 
 class CustomTransform(object):
     def __init__(self, mode, img_size=512, original_size=512):
@@ -124,3 +152,86 @@ class CellPaintingPatchDataset(CellPaintingDataset):
 
 
 
+# modified cell painting dataset for transformer use adapted from romain (meaning adding the tokenization as dataloder output)
+class CellPaintingDataset_SMILES(Dataset):
+    ''' Base Dataset class '''
+
+    def __init__(self,
+                datadir, 
+                metafile,
+                encoding_text="SMILES",
+                text_len=256,
+                truncate_captions=True,
+                tokenizer=None,
+                mode="train",
+                img_size=512,
+                featfile=None):
+
+        self.datadir = datadir
+        self.metadata = pd.read_csv(metafile)
+        self.molfeats = pd.read_csv(featfile, index_col=1) if featfile is not None else None
+        self.transforms = CustomTransform(mode=mode, img_size=img_size)
+
+        self.encoding_text = encoding_text
+        self.text_len = text_len
+        self.truncate_captions = truncate_captions
+        self.tokenizer = tokenizer
+
+    def __len__(self):
+        return len(self.metadata)
+    
+    def __getitem__(self, idx):
+        try:
+            sample = self.get_sample_img(idx)
+            sample.update(self.get_sample_mol(idx))
+            sample.update(self.get_tokenized_mol(idx))
+
+        except Exception as e:
+            print(e)
+            return None
+        
+        return sample['image'], sample['feat'],sample['tokenized_mol']
+
+    def load_img(self, key):
+        ''' Load image from key '''
+        img = np.load(os.path.join(self.datadir, "%s.npz" % key))
+        img = img["sample"] # Shape 520 x 696 x 5
+        img = self.transforms(img)
+
+        return img
+    
+    def get_sample_img(self, idx):
+        '''Returns a dict corresponding to sample img for the provided index'''
+        sample = self.metadata.iloc[idx]
+        key = sample['SAMPLE_KEY']
+
+        # load 5-channel image
+        img = self.load_img(key)
+
+        return {'key_img': key, 'image': img}
+
+    def get_sample_mol(self, idx):
+        ''' Returns a dict corresponding to sample molecule for the provided index'''
+        sample = self.metadata.iloc[idx]
+        smiles = sample['SMILES']
+
+        if self.molfeats is not None:
+            feat = self.molfeats.loc[smiles]['FEAT']
+            feat = eval(f"np.array({feat})")
+            feat = torch.from_numpy(feat).float()
+            return {'key_chem': sample['SAMPLE_KEY'], 'feat': feat}
+
+        return {'key_chem': sample['SAMPLE_KEY'], 'feat': smiles}
+    
+    def get_tokenized_mol(self,idx):
+        sample = self.metadata.iloc[idx]
+        #smiles=self.get_sample_mol(idx)['feat']
+        text = self.metadata.loc[idx, 'SMILES']
+
+        text_tokenized = self.tokenizer.tokenize(
+                text,
+                self.text_len,
+                truncate_text=self.truncate_captions
+            ).squeeze(0)
+        
+        return {'key_chem': sample['SAMPLE_KEY'], 'tokenized_mol': text_tokenized}
