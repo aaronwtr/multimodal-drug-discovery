@@ -10,3 +10,6 @@ models/
 notebooks/
 
 **/.DS_Store
+data/datasplit1.csv
+
+data/samples/
