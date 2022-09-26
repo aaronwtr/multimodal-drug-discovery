@@ -225,6 +225,9 @@ for epoch in range(epochs):
     print('%d iterations' % (epoch+1))
     print('clip: %.3f' % np.mean(clip_epoch[-1:]))
 
+    with open('clip_epoch.txt', 'w+') as f:
+        for item in clip_epoch:
+            f.write("%s " % item)
 
 print(np.mean(time_epoch_liste))
 
