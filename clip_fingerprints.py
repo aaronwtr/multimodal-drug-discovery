@@ -64,7 +64,7 @@ from x_clip import CLIP
 
 from dataset import setup_dataloaders
 from utils import  save_img_as_npz,create_dir
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 
 ################################################################## GPU PROCESS ###############################################################
@@ -78,6 +78,21 @@ if sys.version_info[0] < 3:
     from StringIO import StringIO
 else:
     from io import StringIO
+
+
+# check whether gpu is available on local system, else resort to CPU
+def check_gpu():
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        print('GPU is available.')
+        free_gpu_id = int(get_free_gpu())  # trouve le gpu libre grace a la fonction precedente
+        torch.cuda.set_device(free_gpu_id)  # definie le gpu libre trouvee comme gpu de defaut pour PyTorch
+        set_gpu = "cuda:" + str(free_gpu_id)
+    else:
+        device = torch.device('cpu')
+        print("GPU not available")
+
+    return device
 
 
 def get_free_gpu():
@@ -99,12 +114,6 @@ int(x.rstrip(' [MiB]')))
     print('Returning GPU{} with {} used MiB and {} free MiB'.format(idx,
 gpu_df.iloc[idx]['memory.used'], gpu_df.iloc[idx]['memory.free']))
     return idx
-
-free_gpu_id = int(get_free_gpu()) # trouve le gpu libre grace a la fonction precedente
-torch.cuda.set_device(free_gpu_id) # definie le gpu libre trouvee comme gpu de defaut pour PyTorch
-set_gpu="cuda:"+str(free_gpu_id)
-
-
 
 ################################### Arguments ######################
 
@@ -142,6 +151,7 @@ def setup_args():
     return options.parse_args()
 
 
+device = check_gpu()
 args = setup_args()
 
 
@@ -163,6 +173,7 @@ clip = CLIP(
 args.dataset='cell-painting'
 
 trainloader , testloader,testloaderhard = setup_dataloaders(args)
+
 print(len(trainloader))
 print(len(testloader))
 print(len(testloaderhard))
