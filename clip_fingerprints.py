@@ -115,9 +115,8 @@ def get_free_gpu():
 
 def setup_args(device):
     options = argparse.ArgumentParser()
-
     options.add_argument('--datadir', action="store",
-                         default="/projects/imagesets3/Cell_Painting_dataset/subset_bray/images00/")  # CAREFUL, HERE PUT THE PATH
+                         default="E:/Aaron/PhD/multimodal-drug-discovery/data/samples/")  # CAREFUL, HERE PUT THE PATH
     # OF WHERE IMAGES ARE STORED FOR YOU
     options.add_argument('--train-metafile', action="store", default="data/metadata/df00_train.csv")
     options.add_argument('--val-metafile', action="store", default="data/metadata/df00_test_easy.csv")
@@ -189,7 +188,6 @@ for epoch in range(epochs):
     clip.train()
     clip_error_batch = 0
     count = 0
-
     for batch_idx, (real_sample, cond) in enumerate(trainloader):
         real_sample = real_sample.to(device)
         ecfp = get_ecfp_tensor(cond)
